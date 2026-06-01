@@ -1,44 +1,79 @@
 import { Elysia } from "elysia";
-import dotenv from "dotenv";
-import { initDb, pool } from "./db";
+import { db } from "./db";
+import { users, posts } from "./db/schema";
+import { eq } from "drizzle-orm";
 
-dotenv.config();
+const app = new Elysia()
+  .get("/health", () => {
+    return {
+      status: "ok",
+      message: "Server is running",
+      timestamp: new Date().toISOString(),
+    };
+  })
+  .get("/api/users", async () => {
+    try {
+      const allUsers = await db.select().from(users);
+      return {
+        success: true,
+        data: allUsers,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  })
+  .post("/api/users", async (context: any) => {
+    try {
+      const body = context.body as { name: string; email: string };
+      const result = await db.insert(users).values({
+        name: body.name,
+        email: body.email,
+      });
+      return {
+        success: true,
+        message: "User created successfully",
+        id: result[0].insertId,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  })
+  .get("/api/users/:id", async ({ params }: { params: { id: string } }) => {
+    try {
+      const userId = parseInt(params.id);
+      const user = await db.select().from(users).where(eq(users.id, userId));
+      return {
+        success: true,
+        data: user,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  })
+  .get("/api/posts", async () => {
+    try {
+      const allPosts = await db.select().from(posts);
+      return {
+        success: true,
+        data: allPosts,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
+      };
+    }
+  });
 
-// Initialize minimal app
-const app = new Elysia();
-
-app.get("/health", () => ({ status: "ok" }));
-
-// Users CRUD (uses raw SQL via pool for now)
-app.get("/users", async () => {
-	const [rows] = await pool.query('SELECT id, name, email FROM users');
-	return rows;
-});
-
-app.get("/users/:id", async ({ params }) => {
-	const [rows] = await pool.query('SELECT id, name, email FROM users WHERE id = ?', [params.id]);
-	return (rows as any[])[0] || null;
-});
-
-app.post("/users", async ({ body }) => {
-	const { name, email } = body as any;
-	const [res] = await pool.execute('INSERT INTO users (name, email) VALUES (?, ?)', [name, email]);
-	return { id: (res as any).insertId };
-});
-
-app.put("/users/:id", async ({ params, body }) => {
-	const { name, email } = body as any;
-	await pool.execute('UPDATE users SET name = ?, email = ? WHERE id = ?', [name, email, params.id]);
-	return { ok: true };
-});
-
-app.delete("/users/:id", async ({ params }) => {
-	await pool.execute('DELETE FROM users WHERE id = ?', [params.id]);
-	return { ok: true };
-});
-
-// Initialize DB (pool and ORM) before starting server
-await initDb();
-
-const server = await app.listen(3000);
-console.log(`Server running at http://localhost:${server.port}`);
+const port = parseInt(process.env.PORT || "3000");
+app.listen(port);
+console.log(`Server running at http://localhost:${port}`);
