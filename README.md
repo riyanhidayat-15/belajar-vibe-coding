@@ -1,15 +1,25 @@
-# belajar-vide-coding
+# Belajar Vibe Coding — Backend (Bun + ElysiaJS + Drizzle + MySQL)
 
-To install dependencies:
+This repository contains a minimal scaffold for a backend service using Bun, ElysiaJS, Drizzle ORM, and MySQL.
+
+Quick start
+
+1. Install dependencies:
 
 ```bash
 bun install
 ```
 
-To run:
+2. Create `.env` from `.env.example` and fill database credentials.
+
+3. Run dev server:
 
 ```bash
-bun run index.ts
+bun run dev
 ```
 
-This project was created using `bun init` in bun v1.3.14. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+Next steps
+
+- Run `bun add` to add or update dependencies if needed.
+- Implement Drizzle schema and DB migrations.
+- Commit changes, push branch, open PR.

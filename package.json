@@ -1,0 +1,16 @@
+{
+  "name": "belajar-vibe-coding",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "elysia": "^0.5.0",
+    "drizzle-orm": "*",
+    "mysql2": "^3.2.0",
+    "dotenv": "^16.0.0"
+  }
+}
