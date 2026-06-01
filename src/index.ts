@@ -2,6 +2,7 @@ import { Elysia } from "elysia";
 import { db } from "./db";
 import { users, posts } from "./db/schema";
 import { eq } from "drizzle-orm";
+import { createUser } from "./services/users-service";
 
 const app = new Elysia()
   .get("/health", () => {
@@ -27,20 +28,63 @@ const app = new Elysia()
   })
   .post("/api/users", async (context: any) => {
     try {
-      const body = context.body as { name: string; email: string };
-      const result = await db.insert(users).values({
-        name: body.name,
-        email: body.email,
+      const body = context.body as {
+        name?: string;
+        email?: string;
+        password?: string;
+      };
+
+      // Validasi input - cek field kosong
+      if (!body.name || body.name.trim() === "") {
+        return {
+          error: "validasi gagal: name tidak boleh kosong",
+        };
+      }
+
+      if (!body.email || body.email.trim() === "") {
+        return {
+          error: "validasi gagal: email tidak boleh kosong",
+        };
+      }
+
+      if (!body.password || body.password.trim() === "") {
+        return {
+          error: "validasi gagal: password tidak boleh kosong",
+        };
+      }
+
+      // Panggil service untuk create user
+      await createUser({
+        name: body.name.trim(),
+        email: body.email.trim(),
+        password: body.password,
       });
+
+      // Return success response
       return {
-        success: true,
-        message: "User created successfully",
-        id: result[0].insertId,
+        data: "OK",
       };
     } catch (error) {
+      // Handle error
+      if (error instanceof Error) {
+        const errorMessage = error.message;
+
+        // Cek apakah error adalah email sudah terdaftar
+        if (errorMessage === "email sudah terdaftar") {
+          return {
+            error: "email sudah terdaftar",
+          };
+        }
+
+        // Return error message lainnya
+        return {
+          error: errorMessage,
+        };
+      }
+
+      // Generic error
       return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "Gagal membuat user",
       };
     }
   })
