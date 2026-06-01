@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1780295490938,
+      "tag": "0000_nebulous_the_fury",
+      "breakpoints": true
+    }
+  ]
+}
