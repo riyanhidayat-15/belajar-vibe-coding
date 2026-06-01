@@ -73,6 +73,6 @@ export function usersRoute(app: Elysia) {
         email: t.String(),
         password: t.String(),
       }),
-    }
+    },
   );
 }
